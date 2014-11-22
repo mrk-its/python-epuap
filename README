@@ -1,0 +1,24 @@
+Biblioteka służy do obsługi ePUAP SSO (Single Sign-On),
+docelowo także umożliwi wołanie usług udostępnionych przez ePUAP
+(pobieranie informacji o zalogowanym użytkowniku, weryfikacja PESEL,
+podpisywanie dokumentów profilem zaufanym itd)
+
+przykład użycia w Django:
+
+import epuap
+
+@epuap.epuap_login_required(app_name=u'/mrk/Skrytka/Domyślna')
+def view(request):
+    return http.HttpResponse("logged_in: %r" % request.session['EPUAP'])
+
+app_name w powyższym przykładzie to nazwa mojej domyślnej skrytki w ePUAP.
+Do testów może zostać, w prawdziwych zastosowaniach podaj tu nazwę swojej 
+aplikacji zarejestrowanej w Draco:
+https://konsolahetman.epuap.gov.pl/DracoConsole/AppsAction.do
+
+Biblioteki można też używać bez Django - polecam lekturę kodu źródłowego djangowego dekoratora :)
+
+Dokumentacja:
+
+http://www.extern.pl/artykuly/sso_epuap/ - dobra dokumentacja po polsku, na jej podstawie powstała ta biblioteka.
+
