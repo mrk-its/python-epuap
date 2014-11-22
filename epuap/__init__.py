@@ -20,7 +20,7 @@ SEM = ElementMaker(namespace=NS_SAMLP, nsmap={'saml': NS_SAML, 'samlp': NS_SAMLP
 def create_authn_request_url(authn_url, app_name, redirect_url):
 
     el = SEM('AuthnRequest', SEM('{%s}Issuer' % NS_SAML, app_name),
-        ID=str(uuid.uuid4()), Version="2.0", IssueInstant=gen_ts(), Destination=authn_url,
+        ID=gen_id(), Version="2.0", IssueInstant=gen_ts(), Destination=authn_url,
         IsPassive="false", AssertionConsumerServiceURL=redirect_url)
 
     xml = ET.tostring(el, encoding='UTF-8')
@@ -29,11 +29,22 @@ def create_authn_request_url(authn_url, app_name, redirect_url):
         'SAMLRequest': base64.encodestring(deflate(xml))
     })
 
+def create_logout_request_url(authn_url, app_name, username):
+    el = SEM('LogoutRequest', SEM('{%s}Issuer' % NS_SAML, app_name), SEM('NameID', username),
+        ID=gen_id(), Version="2.0", IssueInstant=gen_ts())
+
+    xml = ET.tostring(el, encoding='UTF-8')
+
+    return authn_url + '?' + urlencode({
+        'SAMLRequest': base64.encodestring(deflate(xml))
+    })
+
+
 def create_artifact_resolve_xml(app_name, artifact):
     return SEM('ArtifactResolve',
         SEM('{%s}Issuer' % NS_SAML, app_name),
         SEM('Artifact', artifact),
-        ID=str(uuid.uuid4()), IssueInstant=gen_ts(), Version="2.0")
+        ID=gen_id(), IssueInstant=gen_ts(), Version="2.0")
 
 def create_soap_env_xml(body):
     E = ElementMaker(namespace=NS_ENV, nsmap={'soap':NS_ENV});
@@ -56,6 +67,9 @@ def deflate(data):
 
 def gen_ts():
     return datetime.datetime.utcnow().isoformat() + "Z"
+
+def gen_id():
+    return "_" + str(uuid.uuid4())
 
 # view decorator for Django
 
@@ -82,5 +96,5 @@ def epuap_login_required(app_name):
         return wrapper
     return epuap_login_required_decorator
 
-__all__ = [create_authn_request_url, create_artifact_resolve_xml, create_soap_env_xml, soap_call, AUTHN_URL, SAML_ARTIFACT_SVC_URL, epuap_login_required]
+__all__ = [create_authn_request_url, create_logout_request_url, create_artifact_resolve_xml, create_soap_env_xml, soap_call, AUTHN_URL, SAML_ARTIFACT_SVC_URL, epuap_login_required]
 
